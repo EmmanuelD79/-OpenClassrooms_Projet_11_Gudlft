@@ -133,8 +133,42 @@ class TestPurchasePlaces:
             assert rv.status_code == 200
             template, context = templates[0]
             assert int(context["club"]["points"]) == expected   
-
-
+    
+    def test_should_redirect_to_welcome_if_booking_is_more_than_available_points(self, monkeypatch, **extra):
+        CLUB_2["points"] = 4
+        club = CLUB_2["name"]
+        competition = COMPETITION_1["name"]
+        placesRequired = 6
+        monkeypatch.setenv("clubs", ",".join(str(v) for v in [CLUB_1, CLUB_2]))
+        monkeypatch.setenv("competitions", ",".join(str(v) for v in [COMPETITION_1, COMPETITION_2]))   
+        rv = app.test_client().post('/purchasePlaces', data={"competition": competition, "club": club, "places" : placesRequired}, follow_redirects=True)
+        assert rv.status_code == 403
+        data = rv.data.decode()
+        assert "Something went wrong-please try again" in data
+        
+    def test_should_redirect_to_welcome_if_club_books_more_than_12_points(self, monkeypatch, **extra):
+        club = CLUB_1["name"]
+        competition = COMPETITION_1["name"]
+        placesRequired = 13
+        monkeypatch.setenv("clubs", ",".join(str(v) for v in [CLUB_1, CLUB_2]))
+        monkeypatch.setenv("competitions", ",".join(str(v) for v in [COMPETITION_1, COMPETITION_2]))   
+        rv = app.test_client().post('/purchasePlaces', data={"competition": competition, "club": club, "places" : placesRequired}, follow_redirects=True)
+        assert rv.status_code == 403
+        data = rv.data.decode()
+        assert "Something went wrong-please try again" in data
+        
+    def test_should_redirect_to_welcome_if_club_books_on_past_competition(self, monkeypatch, **extra):
+        club = CLUB_1["name"]
+        competition = COMPETITION_1["name"]
+        placesRequired = 1
+        monkeypatch.setenv("clubs", ",".join(str(v) for v in [CLUB_1, CLUB_2]))
+        monkeypatch.setenv("competitions", ",".join(str(v) for v in [COMPETITION_1, COMPETITION_2]))   
+        rv = app.test_client().post('/purchasePlaces', data={"competition": competition, "club": club, "places" : placesRequired}, follow_redirects=True)
+        assert rv.status_code == 403
+        data = rv.data.decode()
+        assert "Something went wrong-please try again" in data
+        
+        
 class TestLogout:
     
     def test_should_status_code_redirect(self):
