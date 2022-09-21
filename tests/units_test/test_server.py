@@ -1,38 +1,144 @@
+from server import loadClubs, loadCompetitions, app
+from tests.units_test.conftest import captured_templates, CLUB_1, CLUB_2, COMPETITION_1, COMPETITION_2
+import json
+
+
+class TestJson:
+    
+    def test_loadClubs_should_get_clubs_data(self, monkeypatch):
+            
+        def mock_get(*args, **kwargs):
+            return {"clubs": [CLUB_1, CLUB_2]}
+            
+        monkeypatch.setattr(json, "load", mock_get)
+        result = loadClubs()
+        assert result[0]["name"] == "Simply Lift"
+        assert result[1]["name"] == "Iron Temple"
+
+    def test_loadCompetition_should_get_competitions_data(self, monkeypatch):
+            
+        def mock_get(*args, **kwargs):
+            return {"competitions": [COMPETITION_1, COMPETITION_2]}
+            
+        monkeypatch.setattr(json, "load", mock_get)
+        result = loadCompetitions()
+        assert result[1]["name"] == "Fall Classic"
+        assert result[0]["name"] == "Spring Festival"
+
 
 class TestIndex:
     
-    def test_index_should_status_code_ok(self, client):
-        response = client.get('/')
-        assert response.status_code == 200
-        
-    def test_index_should_have_good_template(self, client):
-        response = client.get('/')
-        data = response.data.decode()
-        assert "<title>GUDLFT Registration</title>" in data
+    def test_index_should_status_code_ok_with_good_templates(self, **extra):
+        templates = []
+        with captured_templates(app, templates, **extra):
+            rv = app.test_client().get('/')
+            assert rv.status_code == 200
+            assert len(templates) == 1
+            template, context = templates[0]
+            assert template.name == 'index.html'
 
 
 class TestShowSummary:
     
-    def test_should_status_code_ok(self, client):
-        response = client.post('/showSummary', data={'email' : 'john@simplylift.co'})
-        assert response.status_code == 200
-    
+    def test_showsummary_should_status_code_ok_with_good_template(self, **extra):
+        templates = []
+        with captured_templates(app, templates, **extra):
+            rv = app.test_client().post('/showSummary', data={'email' : 'john@simplylift.co'})
+            assert rv.status_code == 200
+            assert len(templates) == 1
+            template, context = templates[0]
+            assert template.name == 'welcome.html'
+
+
+    def test_showsummary_should_redirect_to_index_if_unknow_email(self, **extra):
+        templates = []
+        with captured_templates(app, templates, **extra):
+            rv = app.test_client().post('/showSummary', data={'email': 'bad@simplylift.co'}, follow_redirects=True)
+            assert rv.status_code == 400
+            template, context = templates[0]
+            assert template.name == 'index.html'
+            data = rv.data.decode()
+            assert "Sorry, that email wasn't found." in data
+        
+    def test_showsummary_should_undisplayed_booking_when_competition_is_over(self):
+        response = app.test_client().post('/showSummary', data={'email': 'bad@simplylift.co'}, follow_redirects=True)
+        data = response.data.decode()
+        assert "<a href='/book/Fall%20Classic/Simply%20Lift'>Book Places</a>" in data
+
+
 class TestBook:
     
-    def test_should_status_code_ok(self, client):
-        response = client.get("/book/Spring%20Festival/Simply%20Lift")
-        assert response.status_code == 200
+    def test_book_should_status_code_ok_with_good_template(self, **extra):
+        templates = []
+        
+        with captured_templates(app, templates, **extra):
+            rv = app.test_client().get("/book/Spring%20Festival/Simply%20Lift")
+            assert rv.status_code == 200
+            assert len(templates) == 1
+            template, context = templates[0]
+            assert template.name == 'booking.html'
+        
+    def test_book_should_redirect_to_welcome_if_bad_url(self, **extra):
+        templates = []
+        
+        with captured_templates(app, templates, **extra):
+            rv = app.test_client().get("/book/wrong/bad", follow_redirects=True)
+            assert rv.status_code == 400
+            template, context = templates[0]
+            assert template.name == 'index.html'
+            data = rv.data.decode()
+            assert "Something went wrong-please try again" in data
+        
+    def test_book_should_no_reservation_when_competition_is_over(self, **extra):
+        templates = []
+        
+        with captured_templates(app, templates, **extra):
+            rv = app.test_client().get("/book/Fall%20Classic/Simply%20Lift", follow_redirects=True)
+            assert rv.status_code == 403
+            template, context = templates[0]
+            assert template.name == 'index.html'
+            data = rv.data.decode()
+            assert "Something went wrong-please try again" in data
+
 
 class TestPurchasePlaces:
     
-    def test_should_status_code_ok(self, client):
-        response = client.post('/purchasePlaces', data={'competition': 'Spring Festival', 'club': 'Simply Lift', 'places' : 2})
-        assert response.status_code == 200
+    def test_should_status_code_ok_with_good_template(self, monkeypatch,  **extra):
+        competition = COMPETITION_1["name"]
+        club = CLUB_1["name"]
+        placesRequired = 1
+        monkeypatch.setenv("clubs", ",".join(str(v) for v in [CLUB_1, CLUB_2]))
+        monkeypatch.setenv("competitions", ",".join(str(v) for v in [COMPETITION_1, COMPETITION_2])) 
+        templates = []
+        
+        with captured_templates(app, templates, **extra):
+            rv = app.test_client().post('/purchasePlaces', data={"competition": competition, "club": club, "places" : placesRequired})
+            assert rv.status_code == 200
+            assert len(templates) == 1
+            template, context = templates[0]
+            assert template.name == 'welcome.html'
+ 
+        
+    def test_should_deducted_points_of_clubs_balance(self, monkeypatch, **extra):
+        competition = COMPETITION_1["name"]
+        club = CLUB_1["name"]
+        placesRequired = 1
+        expected = 12
+        monkeypatch.setenv("clubs", ",".join(str(v) for v in [CLUB_1, CLUB_2]))
+        monkeypatch.setenv("competitions", ",".join(str(v) for v in [COMPETITION_1, COMPETITION_2]))   
+        templates = []
+        
+        with captured_templates(app, templates, **extra):
+            rv = app.test_client().post('/purchasePlaces', data={"competition": competition, "club": club, "places" : placesRequired})
+            assert rv.status_code == 200
+            template, context = templates[0]
+            assert int(context["club"]["points"]) == expected   
+
 
 class TestLogout:
     
-    def test_should_status_code_redirect(self, client):
-        response = client.get('/logout', follow_redirects=True)
+    def test_should_status_code_redirect(self):
+        response = app.test_client().get('/logout', follow_redirects=True)
         assert response.status_code == 200
         data = response.data.decode()
         assert "<title>GUDLFT Registration</title>" in data
