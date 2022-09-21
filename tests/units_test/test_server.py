@@ -1,5 +1,5 @@
 from server import loadClubs, loadCompetitions, app
-from tests.units_test.conftest import captured_templates, CLUB_1, CLUB_2, COMPETITION_1, COMPETITION_2
+from tests.units_test.conftest import captured_templates, CLUB_1, CLUB_2, COMPETITION_1, COMPETITION_2, MAX_PLACES_PER_CLUB
 import json
 
 
@@ -138,13 +138,13 @@ class TestPurchasePlaces:
         CLUB_2["points"] = 4
         club = CLUB_2["name"]
         competition = COMPETITION_1["name"]
-        placesRequired = 6
+        placesRequired = 5
         monkeypatch.setenv("clubs", ",".join(str(v) for v in [CLUB_1, CLUB_2]))
         monkeypatch.setenv("competitions", ",".join(str(v) for v in [COMPETITION_1, COMPETITION_2]))   
         rv = app.test_client().post('/purchasePlaces', data={"competition": competition, "club": club, "places" : placesRequired}, follow_redirects=True)
         assert rv.status_code == 403
         data = rv.data.decode()
-        assert "Something went wrong-please try again" in data
+        assert "You should not book more than yours available points" in data
         
     def test_should_redirect_to_welcome_if_club_books_more_than_12_points(self, monkeypatch, **extra):
         club = CLUB_1["name"]
