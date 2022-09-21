@@ -54,7 +54,7 @@ class TestShowSummary:
         templates = []
         with captured_templates(app, templates, **extra):
             rv = app.test_client().post('/showSummary', data={'email': 'bad@simplylift.co'}, follow_redirects=True)
-            assert rv.status_code == 400
+            assert rv.status_code == 401
             template, context = templates[0]
             assert template.name == 'index.html'
             data = rv.data.decode()
