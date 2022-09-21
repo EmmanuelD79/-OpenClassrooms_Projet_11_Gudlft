@@ -58,7 +58,7 @@ class TestShowSummary:
             template, context = templates[0]
             assert template.name == 'index.html'
             data = rv.data.decode()
-            assert "Sorry, that email wasn't found." in data
+            assert "<li>Sorry, that email wasn&#39;t found.</li>" in data
         
     def test_showsummary_should_undisplayed_booking_when_competition_is_over(self):
         response = app.test_client().post('/showSummary', data={'email': 'bad@simplylift.co'}, follow_redirects=True)
