@@ -151,11 +151,12 @@ class TestPurchasePlaces:
         competition = COMPETITION_1["name"]
         placesRequired = 13
         monkeypatch.setenv("clubs", ",".join(str(v) for v in [CLUB_1, CLUB_2]))
-        monkeypatch.setenv("competitions", ",".join(str(v) for v in [COMPETITION_1, COMPETITION_2]))   
+        monkeypatch.setenv("competitions", ",".join(str(v) for v in [COMPETITION_1, COMPETITION_2]))
+        monkeypatch.setenv("MAX_PLACES_PER_CLUB", str(MAX_PLACES_PER_CLUB))
         rv = app.test_client().post('/purchasePlaces', data={"competition": competition, "club": club, "places" : placesRequired}, follow_redirects=True)
         assert rv.status_code == 403
         data = rv.data.decode()
-        assert "Something went wrong-please try again" in data
+        assert "You should book no more than 12 places per competition" in data
         
     def test_should_redirect_to_welcome_if_club_books_on_past_competition(self, monkeypatch, **extra):
         club = CLUB_1["name"]

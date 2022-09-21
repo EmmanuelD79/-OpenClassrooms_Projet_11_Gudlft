@@ -12,4 +12,7 @@ def captured_templates(app, recorded, **extra):
     def record(sender, template, context):
         recorded.append((template, context))
     return template_rendered.connected_to(record, app)
+<<<<<<< HEAD
  
+=======
+>>>>>>> 4-bug-clubs-shouldnt-be-able-to-book-more-than-12-places-per-competition
