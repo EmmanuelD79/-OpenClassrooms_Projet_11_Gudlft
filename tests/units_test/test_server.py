@@ -1,12 +1,12 @@
 from server import loadClubs, loadCompetitions, app, clubs, competitions
-from tests.units_test.conftest import captured_templates, CLUB_1, CLUB_2, COMPETITION_1, COMPETITION_2, MAX_PLACES_PER_CLUB
+from tests.units_test.conftest import captured_templates, CLUB_1, CLUB_2, COMPETITION_1, COMPETITION_2
 import json
 import pytest
 
 
 class TestJson:
     
-    def test_loadClubs_should_get_clubs_data(self, monkeypatch ):
+    def test_loadClubs_should_get_clubs_data(self, monkeypatch):
             
         def mock_get(*args, **kwargs):
             return {"clubs": [CLUB_1, CLUB_2]}
@@ -108,7 +108,7 @@ class TestPurchasePlaces:
     def test_should_status_code_ok_with_good_template(self,  **extra):
         competition = COMPETITION_1["name"]
         club = CLUB_1["name"]
-        placesRequired = 1
+        placesRequired = 0
         templates = []
         
         with captured_templates(app, templates, **extra):
@@ -118,20 +118,7 @@ class TestPurchasePlaces:
             template, context = templates[0]
             assert template.name == 'welcome.html'
  
-        
-    def test_should_deducted_points_of_clubs_balance(self, **extra):
-        competition = COMPETITION_1["name"]
-        club = CLUB_1["name"]
-        placesRequired = 1
-        expected = 12 
-        templates = []
-        
-        with captured_templates(app, templates, **extra):
-            rv = app.test_client().post('/purchasePlaces', data={"competition": competition, "club": club, "places" : placesRequired})
-            assert rv.status_code == 200
-            template, context = templates[0]
-            assert int(context["club"]["points"]) == expected   
-    
+ 
     def test_should_redirect_to_welcome_if_booking_is_more_than_available_points(self, **extra):
         CLUB_2["points"] = 4
         club = CLUB_2["name"]
@@ -159,6 +146,19 @@ class TestPurchasePlaces:
         assert rv.status_code == 403
         data = rv.data.decode()
         assert "The competition is over, the booking is closed !" in data
+        
+    def test_should_deducted_points_of_clubs_balance(self, **extra):
+        competition = COMPETITION_1["name"]
+        club = CLUB_1["name"]
+        placesRequired = 1
+        expected = 14
+        templates = []
+        
+        with captured_templates(app, templates, **extra):
+            rv = app.test_client().post('/purchasePlaces', data={"competition": competition, "club": club, "places" : placesRequired})
+            assert rv.status_code == 200
+            template, context = templates[0]
+            assert int(context["club"]["points"]) == expected   
         
         
 class TestLogout:
