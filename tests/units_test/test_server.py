@@ -159,8 +159,24 @@ class TestPurchasePlaces:
             assert rv.status_code == 200
             template, context = templates[0]
             assert int(context["club"]["points"]) == expected   
+
+
+class TestPointsChart:
+    
+    def test_should_display_points_chart(self, **extra):
+        templates = []
         
-        
+        with captured_templates(app, templates, **extra):
+            rv = app.test_client().get('/pointsChart')
+            assert rv.status_code == 200
+            template, context = templates[0]
+            assert template.name == 'chart.html'
+            data = rv.data.decode()
+            assert "Clubs" in data
+            assert "Points" in data
+            assert "<table>" in data
+            
+                    
 class TestLogout:
     
     def test_should_status_code_redirect(self):
@@ -168,5 +184,4 @@ class TestLogout:
         assert response.status_code == 200
         data = response.data.decode()
         assert "<title>GUDLFT Registration</title>" in data
-
-    
+   
