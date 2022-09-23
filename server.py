@@ -17,7 +17,6 @@ def loadCompetitions():
 def checkCompetitionIsOver(listOfCompetitions):
     competitions = []
     for competition in listOfCompetitions:
-        competition['over'] = False
         competition_date = datetime.strptime(competition["date"], "%Y-%m-%d %H:%M:%S")
         competition['over'] = competition_date < datetime.now()
         competitions.append(competition)
@@ -75,7 +74,6 @@ def purchasePlaces():
             if placesRequired <= MAX_PLACES_PER_CLUB:
                 competition['numberOfPlaces'] = str(int(competition['numberOfPlaces'])-placesRequired)
                 club["points"] = str(int(club["points"]) - placesRequired)
-                print(type(club["points"]), club["points"], placesRequired)
                 flash(f'Great-booking complete !')
                 return render_template('welcome.html', club=club, competitions=competitions)
             else:
