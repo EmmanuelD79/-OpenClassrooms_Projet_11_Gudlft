@@ -30,17 +30,17 @@ def captured_templates(app):
 @pytest.fixture()
 def template_info(client):
     
-    def _http_method(method, url, data):
+    def _http_method(method, url, data, **kwargs):
         if method == "post":
-            return client.post(url, data=data)
+            return client.post(url, data=data, **kwargs)
         else:
-            return client.get(url)
+            return client.get(url, **kwargs)
 
     
-    def render_template_info(method="get", url=None, data="", status_code=200):
+    def render_template_info(method="get", url=None, data="", status_code=200, **kwargs):
         
         with captured_templates(server.app) as templates:
-            response = _http_method(method, url, data)
+            response = _http_method(method, url, data, **kwargs)
             assert response.status_code == status_code
             assert len(templates) == 1
             data = response.data.decode()

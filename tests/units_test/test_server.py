@@ -1,6 +1,6 @@
 from server import loadClubs, loadCompetitions
 import json
-from tests.units_test.conftest import Dataset, request_dataset
+from tests.conftest import request_dataset
 from tests.dataset import Dataset
 
 class TestJson:
