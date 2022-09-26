@@ -1,29 +1,28 @@
-from http import server
 from server import loadClubs, loadCompetitions
-import server
 import json
-from tests.units_test.conftest import DATASET, request_dataset
+from tests.units_test.conftest import Dataset, request_dataset
+from tests.dataset import Dataset
 
 class TestJson:
     
     def test_loadClubs_should_get_clubs_data(self, monkeypatch):
             
         def mock_get(*args, **kwargs):
-            return DATASET().clubs
+            return Dataset().clubs
         
         monkeypatch.setattr(json, "load", mock_get)
         result = loadClubs()
-        assert result == DATASET().clubs["clubs"]
+        assert result == Dataset().clubs["clubs"]
 
 
     def test_loadCompetition_should_get_competitions_data(self, monkeypatch):
             
         def mock_get(*args, **kwargs):
-            return DATASET().competitions
+            return Dataset().competitions
         
         monkeypatch.setattr(json, "load", mock_get)
         result = loadCompetitions()
-        assert result == DATASET().competitions["competitions"]
+        assert result == Dataset().competitions["competitions"]
 
 
 class TestIndex:

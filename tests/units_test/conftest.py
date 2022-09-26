@@ -3,36 +3,7 @@ import pytest
 import server
 from flask import template_rendered
 from contextlib import contextmanager
-
-class DATASET:
-    def __init__(self):
-        self.clubs= {"clubs":[
-            {
-                "name":"Simply Lift",
-                "email":"john@simplylift.co",
-                "points":"15"
-            },
-            {
-                "name":"Iron Temple",
-                "email": "admin@irontemple.com",
-                "points":"4"
-            }
-        ]}
-
-        self.competitions = {"competitions": [
-                {
-                    "name": "Spring Festival",
-                    "date": "2023-03-27 10:00:00",
-                    "numberOfPlaces": "25",
-                    "over": False
-                },
-                {
-                    "name": "Fall Classic",
-                    "date": "2020-10-22 13:30:00",
-                    "numberOfPlaces": "13",
-                    "over": True
-                }
-        ]}
+from tests.dataset import Dataset
 
 
 @pytest.fixture(scope="function")
@@ -79,12 +50,12 @@ def template_info(client):
     return render_template_info
 
 def init_data():
-    server.clubs = DATASET().clubs['clubs']
-    server.competitions = DATASET().competitions["competitions"]
+    server.clubs = Dataset().clubs['clubs']
+    server.competitions = Dataset().competitions["competitions"]
     server.MAX_PLACES_PER_CLUB = 12
 
 def request_dataset(index_club, index_competition):
-    club = DATASET().clubs["clubs"][index_club]
-    competition = DATASET().competitions["competitions"][index_competition]
+    club = Dataset().clubs["clubs"][index_club]
+    competition = Dataset().competitions["competitions"][index_competition]
     return club, competition
        
