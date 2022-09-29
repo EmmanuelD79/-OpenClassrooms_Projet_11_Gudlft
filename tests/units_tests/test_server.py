@@ -1,4 +1,5 @@
 from server import loadClubs, loadCompetitions
+import server
 import json
 from tests.conftest import request_dataset
 from tests.dataset import Dataset
@@ -90,19 +91,24 @@ class TestPurchasePlaces:
  
     def test_should_redirect_to_welcome_if_booking_is_more_than_available_points(self, client):
         club, competition = request_dataset(1, 0)
-        placesRequired = 5  
+        placesRequired = 3
         rv = client.post('/purchasePlaces',
-                        data={"competition": competition['name'], "club": club['name'], "places" : placesRequired},
+                        data={"competition": competition['name'], 
+                              "club": club['name'],
+                              "places" : placesRequired},
                         follow_redirects=True)
         assert rv.status_code == 403
         data = rv.data.decode()
         assert "You should not book more than yours available points" in data
         
-    def test_should_redirect_to_welcome_if_club_books_more_than_12_points(self, client):
+    def test_should_redirect_to_welcome_if_club_books_more_than_12_places(self, client):
+        server.COST_PLACE = 1
         club, competition = request_dataset(0, 0)
         placesRequired = 13
         rv = client.post('/purchasePlaces',
-                        data={"competition": competition['name'], "club": club['name'], "places" : placesRequired},
+                        data={"competition": competition['name'], 
+                              "club": club['name'],
+                              "places" : placesRequired},
                         follow_redirects=True)
         assert rv.status_code == 403
         data = rv.data.decode()
@@ -121,12 +127,14 @@ class TestPurchasePlaces:
     def test_should_deducted_points_of_clubs_balance(self, template_info):
         club, competition = request_dataset(0, 0)
         placesRequired = 1
-        expected = 14
+        expected = int(club["points"]) - (server.COST_PLACE * placesRequired)
         template, context, data = template_info(method="post",
                                                 url='/purchasePlaces',
-                                                data={"competition": competition['name'], "club": club['name'], "places" : placesRequired},
+                                                data={"competition": competition['name'],
+                                                      "club": club['name'],
+                                                      "places" : placesRequired},
                                                 status_code=200)       
-        assert int(context["club"]["points"]) == expected
+        assert context["club"]["points"] == str(expected)
 
 
 class TestPointsChart:

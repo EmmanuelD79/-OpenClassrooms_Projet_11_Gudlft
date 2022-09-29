@@ -68,7 +68,8 @@ def init_data():
     dataset = Dataset()
     server.clubs = dataset.clubs['clubs']
     server.competitions = dataset.competitions["competitions"]
-    server.MAX_PLACES_PER_CLUB = 12
+    server.MAX_PLACES_PER_CLUB = dataset.max_places_per_club
+    server.COST_PLACE = dataset.cost_place
 
 def request_dataset(index_club, index_competition):
     dataset = Dataset()
