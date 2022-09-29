@@ -93,8 +93,6 @@ def purchasePlaces():
 def pointsChart():
     return render_template('chart.html', clubs=clubs)
 
-
-
 @app.route('/logout')
 def logout():
     return redirect(url_for('index'))

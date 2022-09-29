@@ -1,4 +1,3 @@
-
 import pytest
 import server 
 from flask import template_rendered
