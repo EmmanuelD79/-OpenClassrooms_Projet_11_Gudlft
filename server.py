@@ -29,6 +29,7 @@ app.secret_key = 'something_special'
 competitions = loadCompetitions()
 clubs = loadClubs()
 MAX_PLACES_PER_CLUB = 12
+COST_PLACE = 3
 
 @app.route('/')
 def index():
@@ -68,12 +69,14 @@ def book(competition,club):
 def purchasePlaces():
     competition = [c for c in competitions if c['name'] == request.form['competition']][0]
     club = [c for c in clubs if c['name'] == request.form['club']][0]
+    
     if not competition['over']:
         placesRequired = int(request.form['places'])
-        if placesRequired <= int(club["points"]):
+        total_points_to_deducted = placesRequired * COST_PLACE
+        if total_points_to_deducted <= int(club["points"]):
             if placesRequired <= MAX_PLACES_PER_CLUB:
                 competition['numberOfPlaces'] = str(int(competition['numberOfPlaces'])-placesRequired)
-                club["points"] = str(int(club["points"]) - placesRequired)
+                club["points"] = str(int(club["points"]) - total_points_to_deducted)
                 flash(f'Great-booking complete !')
                 return render_template('welcome.html', club=club, competitions=competitions)
             else:
@@ -86,14 +89,9 @@ def purchasePlaces():
     response = make_response(render_template('welcome.html', club=club, competitions=competitions))
     return response, 403
     
-
-
-# TODO: Add route for points display
 @app.route('/pointsChart')
 def pointsChart():
     return render_template('chart.html', clubs=clubs)
-
-
 
 @app.route('/logout')
 def logout():

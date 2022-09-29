@@ -27,3 +27,6 @@ class Dataset:
                     "over": True
                 }
         ]}
+        self.cost_place = 2
+        self.max_places_per_club = 12
+        
