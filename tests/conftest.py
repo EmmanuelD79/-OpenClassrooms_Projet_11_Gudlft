@@ -1,10 +1,12 @@
 
 import pytest
-import server
+import server 
 from flask import template_rendered
 from contextlib import contextmanager
 from tests.dataset import Dataset
-
+from selenium import webdriver
+from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.chrome.service import Service
 
 @pytest.fixture(scope="function")
 def client():
@@ -15,6 +17,18 @@ def client():
     init_data()
     with app.test_client() as client:
         yield client
+
+@pytest.fixture(scope="function")
+def setup(request):
+    server_url = "http://127.0.0.1:5000/"
+    print("initiating chrome driver")
+    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
+    driver.get(server_url)
+    driver.maximize_window()
+    request.cls.driver = driver
+    yield driver
+    driver.close()
+
 
 @contextmanager
 def captured_templates(app):
@@ -49,13 +63,16 @@ def template_info(client):
     
     return render_template_info
 
+
 def init_data():
-    server.clubs = Dataset().clubs['clubs']
-    server.competitions = Dataset().competitions["competitions"]
+    dataset = Dataset()
+    server.clubs = dataset.clubs['clubs']
+    server.competitions = dataset.competitions["competitions"]
     server.MAX_PLACES_PER_CLUB = 12
 
 def request_dataset(index_club, index_competition):
-    club = Dataset().clubs["clubs"][index_club]
-    competition = Dataset().competitions["competitions"][index_competition]
+    dataset = Dataset()
+    club = dataset.clubs["clubs"][index_club]
+    competition = dataset.competitions["competitions"][index_competition]
     return club, competition
        
