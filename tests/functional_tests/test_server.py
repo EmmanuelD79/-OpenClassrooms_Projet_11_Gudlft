@@ -2,6 +2,7 @@ import pytest
 from selenium.webdriver.common.by import By
 from tests.conftest import request_dataset
 import time
+import server
 
 
 @pytest.mark.usefixtures("setup")
@@ -53,7 +54,7 @@ class TestServer:
         purchase_welcome_h2 = self.driver.find_element(By.XPATH, "/html/body/h2").text
         purchase_valid_message = self.driver.find_element(By.XPATH, "/html/body/ul[1]/li").text
         club_points_remaining = self.driver.find_element(By.XPATH, "/html/body").text
-        remaining_points = int(club['points']) - 1
+        remaining_points = int(club['points']) - server.COST_PLACE
         remaining_points_msg = f"Points available: {remaining_points}"
         competition_places_remaining = self.driver.find_element(By.XPATH, "/html/body/ul[2]/li[1]").text
         remaining_places = int(competition["numberOfPlaces"])-1

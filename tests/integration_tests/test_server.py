@@ -1,5 +1,5 @@
 from tests.conftest import request_dataset
-
+import server
 
 class TestIntegration:
     def test_should_login_and_logout_with_good_email(self, template_info):
@@ -62,7 +62,7 @@ class TestIntegration:
                                                             "club": club['name'],
                                                             "places": placesRequired
                                                         })
-        club['points'] = str(remaining_points)
+        club['points'] = str(int(club["points"]) - (server.COST_PLACE * placesRequired))
         competition['numberOfPlaces'] = str(remaining_places)
         assert book_context['club'] == club
         assert book_context['competition'] == competition
@@ -73,7 +73,7 @@ class TestIntegration:
 
     def test_should_login_and_books_places_with_not_enough_points(self, template_info):
         club, competition = request_dataset(1, 0)
-        placesRequired = 5
+        placesRequired = 3
 
         index_template, index_context, index_data = template_info("get", "/")
         assert index_template.name == 'index.html'
