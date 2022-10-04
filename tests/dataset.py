@@ -1,15 +1,15 @@
 class Dataset:
     def __init__(self):
-        self.clubs= {"clubs":[
+        self.clubs = {"clubs": [
             {
-                "name":"Simply Lift",
-                "email":"john@simplylift.co",
-                "points":"15"
+                "name": "Simply Lift",
+                "email": "john@simplylift.co",
+                "points": "15"
             },
             {
-                "name":"Iron Temple",
+                "name": "Iron Temple",
                 "email": "admin@irontemple.com",
-                "points":"4"
+                "points": "4"
             }
         ]}
 
