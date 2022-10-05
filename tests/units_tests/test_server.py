@@ -59,7 +59,7 @@ class TestShowSummary:
             data={'email': club['email']},
             follow_redirects=True)
         data = response.data.decode()
-        assert "<a href='/book/Fall%20Classic/Simply%20Lift'>Book Places</a>" not in data
+        assert "<a href=\"/book/Fall%20Classic/Simply%20Lift\">Book Places</a>" not in data
 
 
 class TestBook:
