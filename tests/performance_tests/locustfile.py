@@ -13,3 +13,8 @@ class ServerPerfTest(HttpUser):
     @task
     def logout(self):
         self.client.get("/logout")
+
+    @task
+    def display(self):
+        self.client.get('/pointsChart')
+        
